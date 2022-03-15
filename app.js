@@ -19,6 +19,7 @@ const rosterRoute = require('./routes/roster.route');
 const dashboardRoute = require('./routes/dashboard.route');
 const superAdminRoute = require('./routes/superAdmin.route');
 const timesheetsRoute = require('./routes/timesheets.route');
+const productsRoute = require('./routes/products.route');
 
 const { errorController } = require('./controllers/errors.controller');
 
@@ -45,19 +46,7 @@ app.listen(port, () => {
         res.status(200).send(`Server running at PORT ${port}`);
     });
 
-    app.use('/users', usersRoute);
-
-    app.use('/admins', adminUsersRoute);
-    app.use('/locations', locationsRoute);
-    app.use('/schedules', schedulesRoute);
-    app.use('/managers', managerUsersRoute);
-    app.use('/employees', employeeUsersRoute);
-    app.use('/tags', tagsRoute);
-    app.use('/auth', authRoute);
-    app.use('/roster', rosterRoute);
-    app.use('/dashboard', dashboardRoute);
-    app.use('/superAdmin', superAdminRoute);
-    app.use('/timesheets', timesheetsRoute);
+    app.use('/products', productsRoute);
 
     app.use('*', (req, res, next) => next(new AppError(`Cannot find ${req.originalUrl} on the server!`, 404)));
 

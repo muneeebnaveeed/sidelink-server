@@ -3,8 +3,6 @@ const _ = require('lodash');
 const Model = require('../models/products.model');
 const { catchAsync } = require('./errors.controller');
 const AppError = require('../utils/AppError');
-const User = require('../models/users.model');
-const dayjs = require('dayjs');
 const { getMinifiedPaginationResult } = require('../utils/misc');
 
 module.exports.getAll = catchAsync(async function (req, res, next) {
@@ -19,24 +17,23 @@ module.exports.addOne = catchAsync(async function (req, res, next) {
     res.status(200).send();
 });
 
-// module.exports.edit = catchAsync(async function (req, res, next) {
-//     const { id } = req.params;
+module.exports.edit = catchAsync(async function (req, res, next) {
+    const { id } = req.params;
 
-//     if (!mongoose.isValidObjectId(id)) return next(new AppError('Please enter a valid id', 400));
+    if (!mongoose.isValidObjectId(id)) return next(new AppError('Product does not exist', 400));
 
-//     const body = _.pick(req.body, ['color', 'title', 'shiftTimes', 'employees']);
+    const body = _.pick(req.body, ['name', 'sku', 'price']);
 
-//     await Model.findByIdAndUpdate(id, body, { runValidators: true });
-//     await User.updateMany({ _id: { $in: body.employees } }, { schedule: id, isScheduleAssigned: true });
+    await Model.findByIdAndUpdate(id, body, { runValidators: true });
 
-//     res.status(200).json();
-// });
+    res.status(200).json();
+});
 
 module.exports.remove = catchAsync(async function (req, res, next) {
     let ids = req.params.id.split(',');
 
     for (const id of ids) {
-        if (!mongoose.isValidObjectId(id)) return next(new AppError('Please enter valid id(s)', 400));
+        if (!mongoose.isValidObjectId(id)) return next(new AppError('Please select existing products', 400));
     }
 
     ids = ids.map((id) => mongoose.Types.ObjectId(id));

@@ -1,24 +1,10 @@
 const express = require('express');
-const path = require('path');
 const dotenv = require('dotenv');
 const cors = require('cors');
 
 const Database = require('./utils/db');
-const SendGrid = require('./utils/sendGrid');
 const AppError = require('./utils/AppError');
 
-const usersRoute = require('./routes/users.route');
-const adminUsersRoute = require('./routes/adminUsers.route');
-const locationsRoute = require('./routes/locations.route');
-const schedulesRoute = require('./routes/schedules.route');
-const managerUsersRoute = require('./routes/managerUsers.route');
-const employeeUsersRoute = require('./routes/employeeUsers.route');
-const authRoute = require('./routes/auth.route');
-const tagsRoute = require('./routes/tags.route');
-const rosterRoute = require('./routes/roster.route');
-const dashboardRoute = require('./routes/dashboard.route');
-const superAdminRoute = require('./routes/superAdmin.route');
-const timesheetsRoute = require('./routes/timesheets.route');
 const productsRoute = require('./routes/products.route');
 
 const { errorController } = require('./controllers/errors.controller');
@@ -36,7 +22,6 @@ app.listen(port, () => {
         .connect()
         .then(() => console.log('Connected to DB'))
         .catch((err) => console.log(err.message));
-    new SendGrid().setApiKey();
 
     app.use(express.json());
 

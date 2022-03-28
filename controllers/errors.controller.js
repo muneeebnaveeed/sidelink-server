@@ -2,7 +2,8 @@ const _ = require('lodash');
 const AppError = require('../utils/AppError');
 
 function getCastError(err) {
-    return err;
+    const message = `Invalid ${err.path}`;
+    return new AppError(message, 400);
 }
 function getValidationError(err) {
     const errors = Object.values(err.errors).map((el) => {

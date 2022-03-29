@@ -6,6 +6,6 @@ const autoParams = require('../utils/autoParams');
 router.get('/', autoParams, getAll);
 router.post('/', addOne);
 router.patch('/id/:id', edit);
-router.delete('/', remove);
+router.delete('/id/:id', remove);
 
 module.exports = router;

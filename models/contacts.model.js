@@ -11,7 +11,10 @@ const schema = new mongoose.Schema(
         phone: Number,
         type: {
             type: String,
-            enum: ['SUPPLIER', 'CUSTOMER'],
+            enum: {
+                values: ['SUPPLIER', 'CUSTOMER'],
+                message: 'Please enter a valid contact type',
+            },
             required: [true, 'Please give it a type'],
         },
     },

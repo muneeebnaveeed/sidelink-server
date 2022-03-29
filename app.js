@@ -6,6 +6,7 @@ const Database = require('./utils/db');
 const AppError = require('./utils/AppError');
 
 const productsRoute = require('./routes/products.route');
+const contactsRoute = require('./routes/contacts.route');
 
 const { errorController } = require('./controllers/errors.controller');
 
@@ -32,6 +33,7 @@ app.listen(port, () => {
     });
 
     app.use('/products', productsRoute);
+    app.use('/contacts', contactsRoute);
 
     app.use('*', (req, res, next) => next(new AppError(`Cannot find ${req.originalUrl} on the server!`, 404)));
 

@@ -1,18 +1,15 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
+const express = require("express");
+const dotenv = require("dotenv");
+const cors = require("cors");
 
-const Database = require('./utils/db');
-const AppError = require('./utils/AppError');
+const Database = require("./utils/db");
+const AppError = require("./utils/AppError");
 
-const productsRoute = require('./routes/products.route');
-const contactsRoute = require('./routes/contacts.route');
-
-const { errorController } = require('./controllers/errors.controller');
+const { errorController } = require("./controllers/errors.controller");
 
 const app = express();
 
-dotenv.config();
+dotenv.config({ path: `.${process.env.NODE_ENV}.env` });
 
 const port = process.env.PORT || 5500;
 
@@ -21,21 +18,22 @@ app.listen(port, () => {
 
     new Database()
         .connect()
-        .then(() => console.log('Connected to DB'))
+        .then(() => console.log("Connected to DB"))
         .catch((err) => console.log(err.message));
 
     app.use(express.json());
 
     app.use(cors());
 
-    app.get('/', (req, res) => {
+    app.get("/", (req, res) => {
         res.status(200).send(`Server running at PORT ${port}`);
     });
 
-    app.use('/products', productsRoute);
-    app.use('/contacts', contactsRoute);
+    app.use("/products", require("./routes/products.route"));
+    app.use("/suppliers", require("./routes/suppliers.route"));
+    app.use("/customers", require("./routes/customers.route"));
 
-    app.use('*', (req, res, next) => next(new AppError(`Cannot find ${req.originalUrl} on the server!`, 404)));
+    app.use("*", (req, res, next) => next(new AppError(`Cannot find ${req.originalUrl} on the server!`, 404)));
 
     app.use(errorController);
 });

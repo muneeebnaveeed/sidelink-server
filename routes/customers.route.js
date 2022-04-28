@@ -1,15 +1,15 @@
 const router = require("express").Router();
-const utils = require("../utils");
 
 const {
-    getAll,
     addOne,
     remove,
     edit,
-    bulkUpload,
+    getAll,
     removeAll,
     getSampleFile,
-} = require("../controllers/products.controller");
+    bulkUpload,
+} = require("../controllers/customers.controller");
+const utils = require("../utils");
 const autoParams = require("../utils/autoParams");
 
 router.get("/", autoParams, getAll);

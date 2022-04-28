@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const _ = require("lodash");
-const Model = require("../models/products.model");
+const Model = require("../models/suppliers.model");
 const { catchAsync } = require("./errors.controller");
 const AppError = require("../utils/AppError");
 const utils = require("../utils");
@@ -8,17 +8,19 @@ const path = require("path");
 
 module.exports.getAll = catchAsync(async function (req, res, next) {
     const { page, limit, sort, search = "" } = req.query;
+
     const data = await Model.paginate(
         {
             $or: [utils.searchRegex(search, "name")],
         },
         { projection: { __v: 0 }, lean: true, page, limit, sort }
     );
+
     res.status(200).json(utils.getMinifiedPaginationResult(data));
 });
 
 module.exports.addOne = catchAsync(async function (req, res, next) {
-    const body = _.pick(req.body, ["name", "sku", "price"]);
+    const body = _.pick(req.body, ["name", "phone"]);
     await Model.create(body);
     res.status(200).send();
 });
@@ -32,9 +34,9 @@ module.exports.bulkUpload = catchAsync(async function (req, res, next) {
 module.exports.edit = catchAsync(async function (req, res, next) {
     const { id } = req.params;
 
-    if (!mongoose.isValidObjectId(id)) return next(new AppError("Product does not exist", 400));
+    if (!mongoose.isValidObjectId(id)) return next(new AppError("Invalid supplier id", 400));
 
-    const body = _.pick(req.body, ["name", "sku", "price"]);
+    const body = _.pick(req.body, ["name", "phone"]);
 
     await Model.findByIdAndUpdate(id, body, { runValidators: true });
 
@@ -45,7 +47,7 @@ module.exports.remove = catchAsync(async function (req, res, next) {
     let ids = req.params.id.split(",");
 
     for (const id of ids) {
-        if (!mongoose.isValidObjectId(id)) return next(new AppError("Please select existing products", 400));
+        if (!mongoose.isValidObjectId(id)) return next(new AppError("Invalid supplier id", 400));
     }
 
     ids = ids.map((id) => mongoose.Types.ObjectId(id));
@@ -61,5 +63,5 @@ module.exports.removeAll = catchAsync(async function (req, res, next) {
 });
 
 module.exports.getSampleFile = catchAsync(async function (req, res, next) {
-    res.download(path.join(__dirname, "..", "public", "products.csv"));
+    res.download(path.join(__dirname, "..", "public", `suppliers.csv`));
 });

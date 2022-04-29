@@ -30,6 +30,8 @@ app.listen(port, () => {
     });
 
     app.use("/products", require("./routes/products.route"));
+    app.use("/product_variants", require("./routes/productVariants.route"));
+
     app.use("/suppliers", require("./routes/suppliers.route"));
     app.use("/customers", require("./routes/customers.route"));
 

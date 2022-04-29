@@ -31,7 +31,26 @@ class Utils {
     sleep(ms) {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
+
+    paginate({ data, page, limit }) {
+        const docsToLimitRatio = data.length / limit;
+        const flooredDocsToLimitRatio = Math.floor(docsToLimitRatio);
+
+        let pages = flooredDocsToLimitRatio,
+            docs = [];
+
+        if (flooredDocsToLimitRatio < docsToLimitRatio) pages = flooredDocsToLimitRatio + 1;
+
+        const hasNextPage = page < pages;
+
+        const startIndex = page * limit - limit;
+
+        docs = data.slice(startIndex, startIndex + limit);
+
+        return { docs, pagingCounter: startIndex + 1, hasNextPage, page, limit };
+    }
 }
 
 const utils = new Utils();
+
 module.exports = utils;

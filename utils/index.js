@@ -2,6 +2,9 @@ const multer = require("multer");
 const csv = require("csvtojson");
 const lodash = require("lodash");
 const jwt = require("jsonwebtoken");
+const ProductVariant = require("../models/productVariants.model");
+const Product = require("../models/products.model");
+const Stock = require("../models/stock.model");
 
 class Utils {
     constructor() {
@@ -66,6 +69,70 @@ class Utils {
         });
 
         return productVariantsByProduct;
+    }
+
+    async getProductsBySearch(search) {
+        const [searchedProductVariants, searchedProducts] = await Promise.all([
+            ProductVariant.find(
+                {
+                    $or: [utils.searchRegex(search, "name"), utils.searchRegex(search, "sku")],
+                    isDeleted: false,
+                },
+                "product"
+            ).lean(),
+            Product.find({ ...utils.searchRegex(search, "name"), isDeleted: false }, "_id").lean(),
+        ]);
+
+        const searchedProductIds = [
+            ...searchedProducts.map((e) => e._id.toString()),
+            ...searchedProductVariants.map((e) => e.product.toString()),
+        ];
+
+        const productIds = [...new Set(searchedProductIds)];
+
+        const products = await Product.find({ _id: { $in: productIds }, isDeleted: false }).lean();
+
+        return {
+            productIds,
+            products,
+        };
+    }
+
+    async getStockBySearch(search, params = { searchDeletedProducts: false }) {
+        const isDeleted = [false];
+
+        if (params.searchDeletedProducts) isDeleted.push(true);
+
+        const stock = await Stock.find({ isDeleted: false }, "productVariant").lean();
+
+        const stockedProductVariantIds = [...new Set(stock.map((s) => s.productVariant.toString()))];
+
+        const searchedProductVariants = await ProductVariant.find({
+            _id: { $in: stockedProductVariantIds },
+            $or: [utils.searchRegex(search, "name"), utils.searchRegex(search, "sku")],
+        }).lean();
+
+        const searchedVariantProductIds = [...new Set(searchedProductVariants.map((e) => e.product.toString()))];
+
+        const searchedProducts = await Product.find(
+            {
+                $or: [utils.searchRegex(search, "name"), { _id: { $in: searchedVariantProductIds } }],
+            },
+            "_id name"
+        ).lean();
+
+        const searchedProductIds = searchedProducts.map((e) => e._id.toString());
+
+        const productIds = [...new Set(searchedProductIds)];
+
+        const productVariantIds = searchedProductVariants.map((e) => e._id.toString());
+
+        return {
+            productIds,
+            products: searchedProducts,
+            productVariants: searchedProductVariants,
+            productVariantIds,
+        };
     }
 }
 

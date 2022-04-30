@@ -91,11 +91,27 @@ module.exports.consumeStock = consumeStock;
 module.exports.getAll = catchAsync(async function (req, res, next) {
     const { page, limit, sort, search = "" } = req.query;
 
-    const stock = await Model.find({ isDeleted: false }).populate("productVariant").lean();
+    let products = [],
+        productIds = [],
+        productVariants = [],
+        productVariantIds = [];
 
-    const productIds = [...stock.map((e) => e.productVariant.product.toString())];
+    if (search) {
+        const productsBySearch = await utils.getStockBySearch(search, { searchDeletedProducts: true });
 
-    const products = await Product.find({ _id: { $in: productIds }, isDeleted: false }).lean();
+        products = productsBySearch.products;
+        productIds = productsBySearch.productIds;
+        productVariants = productsBySearch.productVariants;
+        productVariantIds = productsBySearch.productVariantIds;
+    } else {
+        products = await Product.find().lean();
+        productVariants = await ProductVariant.find().lean();
+        productVariantIds = productVariants.map((e) => e._id);
+    }
+
+    const stock = await Model.find({ productVariant: { $in: productVariantIds }, isDeleted: false })
+        .populate("productVariant")
+        .lean();
 
     const productVariantsByProduct = [];
 
@@ -104,8 +120,10 @@ module.exports.getAll = catchAsync(async function (req, res, next) {
             (s) => s.productVariant.product.toString() === product._id.toString()
         );
 
-        const entry = { _id: product._id, product, variants: correspondingProductVariants };
-        productVariantsByProduct.push(entry);
+        if (correspondingProductVariants.length) {
+            const entry = { _id: product._id, product, variants: correspondingProductVariants };
+            productVariantsByProduct.push(entry);
+        }
     });
 
     const paginatedProductVariantsByProduct = utils.paginate({ data: productVariantsByProduct, page, limit });

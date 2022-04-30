@@ -22,33 +22,6 @@ const sanitizeProductBody = (b) => {
     return { body, isInvalid };
 };
 
-const getProductsBySearch = async (search) => {
-    const [searchedProductVariants, searchedProducts] = await Promise.all([
-        ProductVariant.find(
-            {
-                ...utils.searchRegex(search, "name"),
-                isDeleted: false,
-            },
-            "product"
-        ).lean(),
-        Product.find({ ...utils.searchRegex(search, "name"), isDeleted: false }, "_id").lean(),
-    ]);
-
-    const searchedProductIds = [
-        ...searchedProducts.map((e) => e._id.toString()),
-        ...searchedProductVariants.map((e) => e.product.toString()),
-    ];
-
-    const productIds = [...new Set(searchedProductIds)];
-
-    const products = await Product.find({ _id: { $in: productIds }, isDeleted: false }).lean();
-
-    return {
-        productIds,
-        products,
-    };
-};
-
 module.exports.getAllProductsOnly = catchAsync(async function (req, res, next) {
     const products = await Product.find({ isDeleted: false }, "_id name").lean();
     res.status(200).json(products);
@@ -61,7 +34,7 @@ module.exports.getAll = catchAsync(async function (req, res, next) {
         productIds = [];
 
     if (search) {
-        const productsBySearch = await getProductsBySearch(search);
+        const productsBySearch = await utils.getProductsBySearch(search);
 
         products = productsBySearch.products;
         productIds = productsBySearch.productIds;

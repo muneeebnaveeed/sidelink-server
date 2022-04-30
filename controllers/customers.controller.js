@@ -12,6 +12,7 @@ module.exports.getAll = catchAsync(async function (req, res, next) {
     const data = await Model.paginate(
         {
             $or: [utils.searchRegex(search, "name")],
+            isDeleted: false,
         },
         { projection: { __v: 0 }, lean: true, page, limit, sort }
     );
@@ -38,7 +39,7 @@ module.exports.edit = catchAsync(async function (req, res, next) {
 
     const body = _.pick(req.body, ["name", "phone"]);
 
-    await Model.findByIdAndUpdate(id, body, { runValidators: true });
+    await Model.findOneAndUpdate({ _id: id, name: { $ne: "Walk-in" } }, body, { runValidators: true });
 
     res.status(200).json();
 });
@@ -52,13 +53,13 @@ module.exports.remove = catchAsync(async function (req, res, next) {
 
     ids = ids.map((id) => mongoose.Types.ObjectId(id));
 
-    await Model.deleteMany({ _id: { $in: ids } });
+    await Model.updateMany({ _id: { $in: ids }, name: { $ne: "Walk-in" } }, { isDeleted: true });
 
     res.status(200).json();
 });
 
 module.exports.removeAll = catchAsync(async function (req, res, next) {
-    await Model.deleteMany();
+    await Model.updateMany({ name: { $ne: "Walk-in" } }, { isDeleted: true });
     res.status(200).json();
 });
 

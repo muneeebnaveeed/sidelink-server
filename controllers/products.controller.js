@@ -22,23 +22,57 @@ const sanitizeProductBody = (b) => {
     return { body, isInvalid };
 };
 
+const getProductsBySearch = async (search) => {
+    const [searchedProductVariants, searchedProducts] = await Promise.all([
+        ProductVariant.find(
+            {
+                ...utils.searchRegex(search, "name"),
+                isDeleted: false,
+            },
+            "product"
+        ).lean(),
+        Product.find({ ...utils.searchRegex(search, "name"), isDeleted: false }, "_id").lean(),
+    ]);
+
+    const searchedProductIds = [
+        ...searchedProducts.map((e) => e._id.toString()),
+        ...searchedProductVariants.map((e) => e.product.toString()),
+    ];
+
+    const productIds = [...new Set(searchedProductIds)];
+
+    const products = await Product.find({ _id: { $in: productIds }, isDeleted: false }).lean();
+
+    return {
+        productIds,
+        products,
+    };
+};
+
+module.exports.getAllProductsOnly = catchAsync(async function (req, res, next) {
+    const products = await Product.find({ isDeleted: false }, "_id name").lean();
+    res.status(200).json(products);
+});
+
 module.exports.getAll = catchAsync(async function (req, res, next) {
     const { page, limit, sort, search = "" } = req.query;
 
-    const products = await Product.find({ $or: [utils.searchRegex(search, "name")], isDeleted: false }).lean();
-    const productIds = products.map((p) => p._id);
+    let products = [],
+        productIds = [];
+
+    if (search) {
+        const productsBySearch = await getProductsBySearch(search);
+
+        products = productsBySearch.products;
+        productIds = productsBySearch.productIds;
+    } else {
+        products = await Product.find({ isDeleted: false }).lean();
+        productIds = products.map((p) => p._id);
+    }
 
     const productVariants = await ProductVariant.find({ product: { $in: productIds }, isDeleted: false }).lean();
 
-    const productVariantsByProduct = [];
-
-    products.forEach((product) => {
-        const correspondingProductVariants = productVariants.filter(
-            (productVariant) => productVariant.product.toString() === product._id.toString()
-        );
-        const entry = { _id: product._id, product, variants: correspondingProductVariants };
-        productVariantsByProduct.push(entry);
-    });
+    const productVariantsByProduct = utils.groupProductVariants(products, productVariants);
 
     const paginatedProductVariantsByProduct = utils.paginate({ data: productVariantsByProduct, page, limit });
 

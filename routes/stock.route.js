@@ -1,17 +1,17 @@
 const router = require("express").Router();
-const utils = require("../utils");
 
-const { addOne, edit, remove, getAllByProduct } = require("../controllers/productVariants.controller");
+const { addOne, edit, getAll, remove, removeAll, consume } = require("../controllers/stock.controller");
+const utils = require("../utils");
 const autoParams = require("../utils/autoParams");
 
-// router.get("/", autoParams, getAll);
-router.get("/product_id/:productId", getAllByProduct);
-
+router.get("/", getAll);
 router.post("/", addOne);
+router.post("/consume", consume);
+
 // router.post("/bulk", utils.multerUploadInstance.single("file"), bulkUpload);
-router.patch("/id/:id", edit);
+router.patch("/", edit);
 router.delete("/id/:id", remove);
-// router.delete("/all", removeAll);
+router.delete("/all", removeAll);
 // router.get("/sample", getSampleFile);
 
 module.exports = router;

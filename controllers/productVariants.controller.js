@@ -16,6 +16,16 @@ const sanitizeAddProductVariantBody = (b) => {
     return { body, isInvalid };
 };
 
+module.exports.getAllByProduct = catchAsync(async function (req, res, next) {
+    const { productId } = req.params;
+
+    if (!mongoose.isValidObjectId(productId)) return next(new AppError("Invalid product id", 400));
+
+    const productVariants = await ProductVariant.find({ product: productId });
+
+    res.status(200).send(productVariants);
+});
+
 module.exports.addOne = catchAsync(async function (req, res, next) {
     const { body, isInvalid } = sanitizeAddProductVariantBody(req.body);
 

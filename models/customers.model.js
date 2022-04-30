@@ -9,6 +9,11 @@ const schema = new mongoose.Schema(
             minlength: [4, "Bare minimum of 4 characters are required for the customer name"],
         },
         phone: String,
+        isDeleted: {
+            type: Boolean,
+            default: false,
+            select: false,
+        },
     },
     { timestamps: true }
 );

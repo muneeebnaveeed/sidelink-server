@@ -1,9 +1,18 @@
 const router = require("express").Router();
 const utils = require("../utils");
 
-const { getAll, addOne, remove, edit, removeAll, getSampleFile } = require("../controllers/products.controller");
+const {
+    getAll,
+    addOne,
+    remove,
+    edit,
+    removeAll,
+    getSampleFile,
+    getAllProductsOnly,
+} = require("../controllers/products.controller");
 const autoParams = require("../utils/autoParams");
 
+router.get("/products_only", getAllProductsOnly);
 router.get("/", autoParams, getAll);
 router.post("/", addOne);
 router.patch("/id/:id", edit);

@@ -49,6 +49,24 @@ class Utils {
 
         return { docs, pagingCounter: startIndex + 1, hasNextPage, page, limit };
     }
+
+    deduplicateObjectsArray(arr, key) {
+        return arr.filter((value, index, self) => index === self.findIndex((t) => t[key] === value[key]));
+    }
+
+    groupProductVariants(products, productVariants) {
+        const productVariantsByProduct = [];
+
+        products.forEach((product) => {
+            const correspondingProductVariants = productVariants.filter(
+                (productVariant) => productVariant.product.toString() === product._id.toString()
+            );
+            const entry = { _id: product._id, product, variants: correspondingProductVariants };
+            productVariantsByProduct.push(entry);
+        });
+
+        return productVariantsByProduct;
+    }
 }
 
 const utils = new Utils();

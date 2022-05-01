@@ -35,6 +35,18 @@ class Utils {
         return new Promise((resolve) => setTimeout(resolve, ms));
     }
 
+    sort({ data, sort }) {
+        const arrayedSort = Object.entries(JSON.parse(sort));
+        const sortKey = arrayedSort[0][0];
+        const sortValue = arrayedSort[0][1];
+
+        const sorted = data.sort((a, b) => {
+            return a[sortKey] === b[sortKey] ? 0 : a[sortKey] > b[sortKey] ? sortValue * 1 : sortValue * -1;
+        });
+
+        return sorted;
+    }
+
     paginate({ data, page, limit }) {
         const docsToLimitRatio = data.length / limit;
         const flooredDocsToLimitRatio = Math.floor(docsToLimitRatio);

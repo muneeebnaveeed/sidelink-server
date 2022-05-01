@@ -8,10 +8,12 @@ const {
     removeAll,
     getSampleFile,
     bulkUpload,
+    getUnpaginated,
 } = require("../controllers/customers.controller");
 const utils = require("../utils");
 const autoParams = require("../utils/autoParams");
 
+router.get("/all", getUnpaginated);
 router.get("/", autoParams, getAll);
 router.post("/", addOne);
 router.post("/bulk", utils.multerUploadInstance.single("file"), bulkUpload);

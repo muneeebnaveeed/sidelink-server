@@ -37,6 +37,10 @@ app.listen(port, () => {
 
     app.use("/stock", require("./routes/stock.route"));
 
+    app.use("/purchases", require("./routes/purchases.route"));
+    app.use("/sales", require("./routes/sales.route"));
+    app.use("/transactions", require("./routes/transactions.route"));
+
     app.use("*", (req, res, next) => next(new AppError(`Cannot find ${req.originalUrl} on the server!`, 404)));
 
     app.use(errorController);

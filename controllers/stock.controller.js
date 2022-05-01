@@ -9,6 +9,49 @@ const AppError = require("../utils/AppError");
 const utils = require("../utils");
 const path = require("path");
 
+module.exports.getUnpaginated = catchAsync(async function (req, res, next) {
+    const { search = "" } = req.query;
+
+    let products = [],
+        productIds = [],
+        productVariants = [],
+        productVariantIds = [];
+
+    if (search) {
+        const productsBySearch = await utils.getStockBySearch(search, { searchDeletedProducts: true });
+
+        products = productsBySearch.products;
+        productIds = productsBySearch.productIds;
+        productVariants = productsBySearch.productVariants;
+        productVariantIds = productsBySearch.productVariantIds;
+    } else {
+        products = await Product.find().lean();
+        productIds = products.map((e) => e._id.toString());
+        productVariants = await ProductVariant.find().lean();
+        productVariantIds = productVariants.map((e) => e._id);
+    }
+
+    const stock = await Model.find({ productVariant: { $in: productVariantIds }, isDeleted: false })
+        .populate("productVariant")
+        .lean();
+
+    const results = stock.map((s) => {
+        const productVariant = _.pick(s.productVariant, ["_id", "name", "sku", "price"]);
+
+        const correspondingProduct = products.find((p) => p._id.toString() === s.productVariant.product.toString());
+
+        const product = _.pick(correspondingProduct, ["_id", "name"]);
+
+        return {
+            quantity: s.quantity,
+            product,
+            ...productVariant,
+        };
+    });
+
+    res.status(200).json(results);
+});
+
 const sanitizeStockBody = (b) => {
     let body = b.map((e) => _.pick(e, ["_id", "quantity"]));
 

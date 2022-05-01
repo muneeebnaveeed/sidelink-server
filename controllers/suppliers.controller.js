@@ -6,6 +6,11 @@ const AppError = require("../utils/AppError");
 const utils = require("../utils");
 const path = require("path");
 
+module.exports.getUnpaginated = catchAsync(async function (req, res, next) {
+    const data = await Model.find({}, "_id name").lean();
+    res.status(200).json(data);
+});
+
 module.exports.getAll = catchAsync(async function (req, res, next) {
     const { page, limit, sort, search = "" } = req.query;
 

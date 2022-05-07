@@ -10,7 +10,7 @@ const path = require("path");
 const { addStock } = require("./stock.controller");
 
 module.exports.getAll = catchAsync(async function (req, res, next) {
-    const { page, limit, sort, type = "sale,purchase", paid = "all" } = req.query;
+    const { page, limit, sort, search = "", type = "sale,purchase", paid = "all" } = req.query;
 
     const typeFilter = type.split(",");
 
@@ -23,12 +23,18 @@ module.exports.getAll = catchAsync(async function (req, res, next) {
         salePromise = null;
 
     if (typeFilter.includes("sale"))
-        salePromise = Sale.find({ isDeleted: false, ...paidQuery }, "_id subtotal paid discount total customer")
+        salePromise = Sale.find(
+            { ...utils.searchRegex(search, "sr"), isDeleted: false, ...paidQuery },
+            "_id subtotal paid discount total customer sr createdAt"
+        )
             .populate("customer")
             .lean();
 
     if (typeFilter.includes("purchase"))
-        purchasePromise = Purchase.find({ isDeleted: false, ...paidQuery }, "_id subtotal paid discount total supplier")
+        purchasePromise = Purchase.find(
+            { ...utils.searchRegex(search, "sr"), isDeleted: false, ...paidQuery },
+            "_id subtotal paid discount total supplier sr createdAt"
+        )
             .populate("supplier")
             .lean();
 
@@ -55,6 +61,11 @@ module.exports.getAll = catchAsync(async function (req, res, next) {
     if (sales && purchases) data = [...transformedPurchases, ...transformedSales];
     else if (sales) data = [...transformedSales];
     else data = [...transformedPurchases];
+
+    // data = data.map((e) => ({
+    //     ...e,
+    //     sr: e._id.toString().slice(e._id.toString().length - 4, e._id.toString().length),
+    // }));
 
     const sorted = utils.sort({ data, sort });
 

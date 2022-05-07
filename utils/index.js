@@ -146,6 +146,16 @@ class Utils {
             productVariantIds,
         };
     }
+
+    generateSR(next) {
+        if (this.isNew) {
+            const id = this._id.toString();
+            const sr = id.slice(id.length - 4, id.length);
+            this.sr = sr;
+        }
+
+        next();
+    }
 }
 
 const utils = new Utils();

@@ -23,8 +23,6 @@ const sanitizePurchaseBody = (b, next) => {
 module.exports.getProductsByPurchaseId = catchAsync(async function (req, res, next) {
     const { id } = req.params;
 
-    await utils.sleep(10000);
-
     if (!mongoose.isValidObjectId(id)) return next(new AppError("Invalid purchase id", 400));
 
     const purchase = await Model.findById(id, "products")

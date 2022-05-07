@@ -1,8 +1,10 @@
 const mongoose = require("mongoose");
 const mongoosePagiante = require("mongoose-paginate-v2");
+const utils = require("../utils");
 
 const schema = new mongoose.Schema(
     {
+        sr: { type: String, required: [true, "Serial number is required"] },
         supplier: {
             type: mongoose.Types.ObjectId,
             ref: "Supplier",
@@ -61,6 +63,9 @@ const schema = new mongoose.Schema(
 );
 
 schema.plugin(mongoosePagiante);
+
+schema.pre("save", utils.generateSR);
+
 const Model = mongoose.model("Purchase", schema);
 
 module.exports = Model;

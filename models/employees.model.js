@@ -5,10 +5,14 @@ const schema = new mongoose.Schema(
     {
         name: {
             type: String,
-            required: [true, "Please enter the contact name"],
-            minlength: [4, "Bare minimum of 4 characters are required for the supplier name"],
+            required: [true, "Please enter the employee name"],
+            minlength: [4, "Bare minimum of 4 characters are required for the employee name"],
         },
         phone: String,
+        salary: {
+            type: Number,
+            required: [true, "Please input salary"],
+        },
         isDeleted: {
             type: Boolean,
             default: false,
@@ -19,6 +23,7 @@ const schema = new mongoose.Schema(
 );
 
 schema.plugin(mongoosePagiante);
-const Model = mongoose.model("Supplier", schema);
+
+const Model = mongoose.model("Employee", schema);
 
 module.exports = Model;

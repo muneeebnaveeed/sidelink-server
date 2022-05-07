@@ -1,13 +1,13 @@
 const mongoose = require("mongoose");
 const _ = require("lodash");
-const Model = require("../models/suppliers.model");
+const Model = require("../models/employees.model");
 const { catchAsync } = require("./errors.controller");
 const AppError = require("../utils/AppError");
 const utils = require("../utils");
 const path = require("path");
 
 module.exports.getUnpaginated = catchAsync(async function (req, res, next) {
-    const data = await Model.find({ isDeleted: false }, "_id name").lean();
+    const data = await Model.find({}, "_id name salary").lean();
     res.status(200).json(data);
 });
 
@@ -17,7 +17,6 @@ module.exports.getAll = catchAsync(async function (req, res, next) {
     const data = await Model.paginate(
         {
             $or: [utils.searchRegex(search, "name")],
-            isDeleted: false,
         },
         { projection: { __v: 0 }, lean: true, page, limit, sort }
     );
@@ -26,7 +25,7 @@ module.exports.getAll = catchAsync(async function (req, res, next) {
 });
 
 module.exports.addOne = catchAsync(async function (req, res, next) {
-    const body = _.pick(req.body, ["name", "phone"]);
+    const body = _.pick(req.body, ["name", "phone", "salary"]);
     await Model.create(body);
     res.status(200).send();
 });
@@ -40,9 +39,9 @@ module.exports.bulkUpload = catchAsync(async function (req, res, next) {
 module.exports.edit = catchAsync(async function (req, res, next) {
     const { id } = req.params;
 
-    if (!mongoose.isValidObjectId(id)) return next(new AppError("Invalid supplier id", 400));
+    if (!mongoose.isValidObjectId(id)) return next(new AppError("Invalid employee id", 400));
 
-    const body = _.pick(req.body, ["name", "phone"]);
+    const body = _.pick(req.body, ["name", "phone", "salary"]);
 
     await Model.findByIdAndUpdate(id, body, { runValidators: true });
 
@@ -53,7 +52,7 @@ module.exports.remove = catchAsync(async function (req, res, next) {
     let ids = req.params.id.split(",");
 
     for (const id of ids) {
-        if (!mongoose.isValidObjectId(id)) return next(new AppError("Invalid supplier id", 400));
+        if (!mongoose.isValidObjectId(id)) return next(new AppError("Invalid employee id", 400));
     }
 
     ids = ids.map((id) => mongoose.Types.ObjectId(id));
@@ -69,5 +68,5 @@ module.exports.removeAll = catchAsync(async function (req, res, next) {
 });
 
 module.exports.getSampleFile = catchAsync(async function (req, res, next) {
-    res.download(path.join(__dirname, "..", "public", `suppliers.csv`));
+    res.download(path.join(__dirname, "..", "public", `employees.csv`));
 });

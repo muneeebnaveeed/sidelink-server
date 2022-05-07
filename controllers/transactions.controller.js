@@ -6,8 +6,6 @@ const Sale = require("../models/sales.model");
 const { catchAsync } = require("./errors.controller");
 const AppError = require("../utils/AppError");
 const utils = require("../utils");
-const path = require("path");
-const { addStock } = require("./stock.controller");
 
 module.exports.getAll = catchAsync(async function (req, res, next) {
     const { page, limit, sort, search = "", type = "sale,purchase", paid = "all" } = req.query;

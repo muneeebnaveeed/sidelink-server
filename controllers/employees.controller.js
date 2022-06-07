@@ -16,6 +16,7 @@ module.exports.getAll = catchAsync(async function (req, res, next) {
 
     const data = await Model.paginate(
         {
+            isDeleted: false,
             $or: [utils.searchRegex(search, "name")],
         },
         { projection: { __v: 0 }, lean: true, page, limit, sort }

@@ -8,7 +8,9 @@ const AppError = require("../utils/AppError");
 const utils = require("../utils");
 
 module.exports.getAll = catchAsync(async function (req, res, next) {
-    const { page, limit, sort, search = "", type = "sale,purchase", paid = "all" } = req.query;
+    const { page, limit, sort, search = "", type = "sale,purchase", paid = "all", dates } = req.query;
+
+    const [startDate, endDate] = dates.split(",");
 
     const typeFilter = type.split(",");
 
@@ -22,7 +24,12 @@ module.exports.getAll = catchAsync(async function (req, res, next) {
 
     if (typeFilter.includes("sale"))
         salePromise = Sale.find(
-            { ...utils.searchRegex(search, "sr"), isDeleted: false, ...paidQuery },
+            {
+                ...utils.searchRegex(search, "sr"),
+                isDeleted: false,
+                createdAt: { $gte: startDate, $lte: endDate },
+                ...paidQuery,
+            },
             "_id subtotal paid discount total customer sr createdAt"
         )
             .populate("customer")
@@ -30,7 +37,12 @@ module.exports.getAll = catchAsync(async function (req, res, next) {
 
     if (typeFilter.includes("purchase"))
         purchasePromise = Purchase.find(
-            { ...utils.searchRegex(search, "sr"), isDeleted: false, ...paidQuery },
+            {
+                ...utils.searchRegex(search, "sr"),
+                isDeleted: false,
+                createdAt: { $gte: startDate, $lte: endDate },
+                ...paidQuery,
+            },
             "_id subtotal paid discount total supplier sr createdAt"
         )
             .populate("supplier")

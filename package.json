@@ -11,6 +11,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": "14.18.0"
+  },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
     "cross-env": "^7.0.3",
